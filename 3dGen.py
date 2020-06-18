@@ -26,7 +26,7 @@ def url_to_image(url):
     # it into OpenCV format
     resp = urllib.request.urlopen(url)
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
-    image = cv2.imdecode(image, cv2.IMREAD_COLOR,)
+    image = cv2.imdecode(image, cv2.IMREAD_GRAYSCALE)
 
     # return the image
     return image
@@ -119,8 +119,7 @@ def main():
     imgLft = None
     def URLLeft():
         try:
-            imgLft=url_to_image((textUrlL.text())).copy()
-            #plt.imshow(imgLft)
+            imgLft=url_to_image((textUrlL.text()))
             image = Image.open(urllib.request.urlopen(textUrlL.text()))
             imgURLL.setPixmap(QPixmap(QImage(ImageQt(image)).copy()))
         except:
@@ -157,9 +156,20 @@ def main():
     urlImgShowLayout.addLayout(imgUrlLayoutR)
 
     #Disparity
+    def showDepthMapUrl():
+        imgL = url_to_image((textUrlR.text())).copy()
+        imgR = url_to_image((textUrlR.text())).copy()
+        imgL_, disparity_, threshold, morphology=disparity(imgL, imgR)
+        gImage = QPixmap.fromImage(ImageQt(Image.fromarray(imgL_)))
+        staticCanvas2.figure.subplots().imshow(disparity_)
+    btnShowUrlDisparity = QPushButton("Get Disparity")
+    btnShowUrlDisparity.clicked.connect(showDepthMapUrl)
+    staticCanvas2 = FigureCanvas(Figure(figsize=(5,3)))
     urlDisparityLayout = QHBoxLayout()
+    urlDisparityLayout.addWidget(staticCanvas2)
     #Adding the layouts
     urlMainLayout.addLayout(urlImgShowLayout)
+    urlMainLayout.addWidget(btnShowUrlDisparity)
     urlMainLayout.addLayout(urlDisparityLayout)
     urlWindow.setLayout(urlMainLayout)
     tabWindow.addTab(MainWindow, "File")
